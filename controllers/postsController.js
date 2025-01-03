@@ -21,7 +21,6 @@ exports.getPostById = async (req, res) => {
 };
 
 exports.createPost = async (req, res) => {
-  console.log(req.user);
   if (req.user.role != "editor") {
     return res.status(403).send("Unauthorized");
   }
@@ -39,12 +38,10 @@ exports.createPost = async (req, res) => {
 exports.addComment = async (req, res) => {
   const postId = Number(req.params.postId);
   const userId = req.user.id;
-  console.log(postId);
   try {
     await prisma.comment.create({
       data: { content: req.body.content, postId, userId },
     });
-    console.log("done");
     res.status(200).send("added comment");
   } catch (error) {
     res.status(400);
@@ -53,7 +50,6 @@ exports.addComment = async (req, res) => {
 
 exports.getAllCommentsByPostId = async (req, res, next) => {
   const postId = Number(req.params.postId);
-  console.log(postId);
 
   const comments = await prisma.comment.findMany({
     where: { postId },
@@ -66,7 +62,6 @@ exports.getAllCommentsByPostId = async (req, res, next) => {
       },
     },
   });
-  console.log(comments);
   res.json(comments);
 
   next();

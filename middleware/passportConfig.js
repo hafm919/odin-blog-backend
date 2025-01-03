@@ -41,8 +41,6 @@ passport.use(
       secretOrKey: process.env.AUTHENTICATION_SECRET,
     },
     async (jwtPayload, done) => {
-      // The user is already in the payload, so just pass it along
-      console.log("JWT Payload:", jwtPayload);
       const user = await prisma.user.findUnique({
         where: { id: jwtPayload.id },
         select: {
@@ -53,7 +51,7 @@ passport.use(
           password: false,
         },
       });
-      return done(null, user); // Attach user data from payload
+      return done(null, user);
     }
   )
 );
