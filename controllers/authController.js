@@ -17,12 +17,10 @@ const validateUser = [
       }
     })
     .withMessage("Email already in use"),
-  body("password")
-    .custom((password, { req }) => {
-      return password === req.body.repeat_password;
-    })
-    .withMessage("Passwords don't match"),
-  body("name").trim().isAlpha().withMessage("Name should only contain letters"),
+  body("fullName")
+    .trim()
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("Name should only contain letters and spaces"),
 ];
 
 exports.signUpUser = [
@@ -37,7 +35,7 @@ exports.signUpUser = [
       data: {
         email: req.body.email,
         password: hashedPassword,
-        name: req.body.name,
+        name: req.body.fullName,
         role: "subscriber",
       },
     });
@@ -49,20 +47,15 @@ exports.signUpUser = [
 exports.loginUser = (req, res, next) => {
   passport.authenticate("local", { session: false }, (err, user, info) => {
     if (err || !user) {
-      return res.status(400).json({
-        message: "Something is not right",
-        user: user,
-        info,
-      });
+      return res
+        .status(400)
+        .json({ message: info ? info.message : "Invalid credentials" });
     }
     req.login(user, { session: false }, (err) => {
       if (err) {
         res.send(err);
       }
-      const token = jwt.sign(
-        { id: user.id },
-        process.env.AUTHENTICATION_SECRET
-      );
+      const token = jwt.sign(user, process.env.AUTHENTICATION_SECRET);
       return res.json({ user, token });
     });
   })(req, res, next);

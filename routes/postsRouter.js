@@ -9,6 +9,11 @@ postsRouter.post(
   passport.authenticate("jwt", { session: false }),
   postController.createPost
 );
+postsRouter.put(
+  "/:postId",
+  passport.authenticate("jwt", { session: false }),
+  postController.updatePost
+);
 postsRouter.post(
   "/:postId/comments/",
   passport.authenticate("jwt", { session: false }),
