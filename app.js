@@ -11,7 +11,7 @@ app.use(passport.initialize());
 app.use(
   cors({
     origin: "http://localhost:5173",
-    methods: ["POST", "GET", "PUT"],
+    methods: ["POST", "GET", "PUT", "DELETE", "PATCH"],
   })
 );
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

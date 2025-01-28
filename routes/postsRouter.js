@@ -14,6 +14,16 @@ postsRouter.put(
   passport.authenticate("jwt", { session: false }),
   postController.updatePost
 );
+postsRouter.patch(
+  "/:postId",
+  passport.authenticate("jwt", { session: false }),
+  postController.togglePublishedMode
+);
+postsRouter.delete(
+  "/:postId",
+  passport.authenticate("jwt", { session: false }),
+  postController.deletePost
+);
 postsRouter.post(
   "/:postId/comments/",
   passport.authenticate("jwt", { session: false }),

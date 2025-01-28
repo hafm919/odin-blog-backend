@@ -63,6 +63,29 @@ exports.createPost = [
   },
 ];
 
+exports.deletePost = async (req, res) => {
+  try {
+    if (req.user.role !== "editor") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const { postId } = req.params;
+
+    const deletedPost = await prisma.post.delete({
+      where: { id: parseInt(postId) },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Post deleted successfully", deletedPost });
+  } catch (error) {
+    console.error("Error deleting post:", error.message);
+    return res
+      .status(500)
+      .json({ message: "Failed to delete post", error: error.message });
+  }
+};
+
 exports.updatePost = [
   upload.single("image"),
   async (req, res) => {
@@ -86,6 +109,22 @@ exports.updatePost = [
     res.status(200).send("Post Updated");
   },
 ];
+
+exports.togglePublishedMode = async (req, res) => {
+  if (req.user.role != "editor") {
+    return res.status(403).send("Unauthorized");
+  }
+  const { postId } = req.params;
+  const post = await prisma.post.findUnique({
+    where: { id: parseInt(postId) },
+  });
+
+  await prisma.post.update({
+    where: { id: parseInt(postId) },
+    data: { published: !post.published },
+  });
+  res.status(200).send("Post Updated");
+};
 
 exports.addComment = async (req, res) => {
   const postId = Number(req.params.postId);
