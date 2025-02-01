@@ -24,11 +24,17 @@ postsRouter.delete(
   passport.authenticate("jwt", { session: false }),
   postController.deletePost
 );
+postsRouter.delete(
+  "/:postId/comments/:commentId",
+  passport.authenticate("jwt", { session: false }),
+  postController.deleteComment
+);
 postsRouter.post(
   "/:postId/comments/",
   passport.authenticate("jwt", { session: false }),
   postController.addComment
 );
+
 postsRouter.get("/:postId/comments/", postController.getAllCommentsByPostId);
 postsRouter.get("/:postId", postController.getPostById);
 

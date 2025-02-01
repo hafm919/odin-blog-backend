@@ -25,20 +25,35 @@ const upload = multer({
 });
 
 exports.getAllPosts = async (req, res) => {
-  const posts = await prisma.post.findMany({
-    include: {
-      author: {
-        select: { email: true, name: true },
+  try {
+    const limit = parseInt(req.query.limit) || 10; // Default limit to 10
+    const posts = await prisma.post.findMany({
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
       },
-    },
-  });
-  res.json(posts);
+      include: {
+        author: {
+          select: { email: true, name: true },
+        },
+      },
+    });
+    res.json(posts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
 };
 
 exports.getPostById = async (req, res) => {
   const postId = req.params.postId;
   const post = await prisma.post.findUnique({
     where: { id: parseInt(postId) },
+    include: {
+      author: {
+        select: { email: true, name: true },
+      },
+    },
   });
   res.json(post);
 };
@@ -129,13 +144,20 @@ exports.togglePublishedMode = async (req, res) => {
 exports.addComment = async (req, res) => {
   const postId = Number(req.params.postId);
   const userId = req.user.id;
+
   try {
-    await prisma.comment.create({
-      data: { content: req.body.content, postId, userId },
+    const newComment = await prisma.comment.create({
+      data: {
+        content: req.body.content,
+        postId,
+        userId,
+      },
     });
-    res.status(200).send("added comment");
+
+    res.status(201).json(newComment);
   } catch (error) {
-    res.status(400);
+    console.error("Error adding comment:", error);
+    res.status(400).json({ error: "Failed to add comment" });
   }
 };
 
@@ -156,4 +178,11 @@ exports.getAllCommentsByPostId = async (req, res, next) => {
   res.json(comments);
 
   next();
+};
+
+exports.deleteComment = async (req, res, next) => {
+  const userId = req.user.id;
+  const id = parseInt(req.params.commentId);
+  await prisma.comment.delete({ where: { id } });
+  res.status(200).send("Deleted Succesfully");
 };

@@ -16,6 +16,7 @@ exports.getCommentsByAuthorId = async (req, res) => {
     include: {
       post: {
         select: {
+          id: true,
           title: true,
         },
       },

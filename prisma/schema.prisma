@@ -42,4 +42,5 @@ model Comment {
   userId  Int
   content String
   postId  Int
+  createdAt   DateTime  @default(now())
 }
