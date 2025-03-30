@@ -3,7 +3,7 @@ const postController = require("../controllers/postsController");
 const postsRouter = Router();
 const passport = require("../middleware/passportConfig");
 
-postsRouter.get("/", postController.getAllPosts);
+postsRouter.get("/", postController.getAllPublishedPosts);
 postsRouter.post(
   "/",
   passport.authenticate("jwt", { session: false }),

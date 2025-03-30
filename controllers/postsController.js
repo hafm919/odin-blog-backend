@@ -24,7 +24,7 @@ const upload = multer({
   },
 });
 
-exports.getAllPosts = async (req, res) => {
+exports.getAllPublishedPosts = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10; // Default limit to 10
     const posts = await prisma.post.findMany({
@@ -32,9 +32,15 @@ exports.getAllPosts = async (req, res) => {
       orderBy: {
         createdAt: "desc",
       },
+      where: {
+        published: true,
+      },
       include: {
         author: {
-          select: { email: true, name: true },
+          select: { email: true, name: true, profileImg: true },
+        },
+        Category: {
+          select: { name: true },
         },
       },
     });
@@ -53,6 +59,9 @@ exports.getPostById = async (req, res) => {
       author: {
         select: { email: true, name: true },
       },
+      Category: {
+        select: { name: true },
+      },
     },
   });
   res.json(post);
@@ -66,12 +75,24 @@ exports.createPost = [
     }
     const authorId = req.user.id;
     const imagePath = req.file ? `/uploads/posts/${req.file.filename}` : null;
+    const categoryNames = req.body.categories
+      .split(",")
+      .map((name) => name.trim().toLowerCase());
+
+    const categoriesData = categoryNames.map((name) => ({
+      where: { name },
+      create: { name },
+    }));
+
     await prisma.post.create({
       data: {
         authorId,
         content: req.body.content,
         title: req.body.title,
         imageUrl: imagePath,
+        Category: {
+          connectOrCreate: categoriesData, // Find or create categories (in lowercase)
+        },
       },
     });
     res.status(200).send("Post Created");
@@ -111,6 +132,14 @@ exports.updatePost = [
     const { content, title } = req.body;
     const authorId = req.user.id;
     const imagePath = req.file ? `/uploads/posts/${req.file.filename}` : null;
+    const categoryNames = req.body.categories
+      .split(",")
+      .map((name) => name.trim().toLowerCase());
+
+    const categoriesData = categoryNames.map((name) => ({
+      where: { name },
+      create: { name },
+    }));
 
     await prisma.post.update({
       where: { id: parseInt(postId) },
@@ -119,6 +148,9 @@ exports.updatePost = [
         content,
         title,
         imageUrl: imagePath || undefined,
+        Category: {
+          connectOrCreate: categoriesData,
+        },
       },
     });
     res.status(200).send("Post Updated");
@@ -171,6 +203,7 @@ exports.getAllCommentsByPostId = async (req, res, next) => {
         select: {
           name: true,
           email: true,
+          profileImg: true,
         },
       },
     },

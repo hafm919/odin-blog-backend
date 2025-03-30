@@ -14,33 +14,41 @@ datasource db {
 }
 
 model User {
-  id       Int       @id @default(autoincrement())
-  email    String    @unique
-  name     String?
-  role     String
-  password String
-  posts    Post[]
-  Comments Comment[]
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  name       String?   @default("/uploads/profile")
+  role       String
+  password   String
+  posts      Post[]
+  Comments   Comment[]
+  profileImg String?
 }
 
 model Post {
-  id        Int       @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   title     String
   content   String?
-  imageUrl String?
-  published Boolean   @default(false)
-  author    User      @relation(fields: [authorId], references: [id])
+  imageUrl  String?
+  published Boolean    @default(false)
+  author    User       @relation(fields: [authorId], references: [id])
   authorId  Int
-  createdAt   DateTime  @default(now())
+  createdAt DateTime   @default(now())
   Comment   Comment[]
+  Category  Category[]
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  Post Post[]
 }
 
 model Comment {
-  id      Int    @id @default(autoincrement())
-  user    User   @relation(fields: [userId], references: [id])
-  post    Post   @relation(fields: [postId], references: [id])
-  userId  Int
-  content String
-  postId  Int
-  createdAt   DateTime  @default(now())
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id],onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id],onDelete: Cascade)
+  userId    Int
+  content   String
+  postId    Int
+  createdAt DateTime @default(now())
 }
